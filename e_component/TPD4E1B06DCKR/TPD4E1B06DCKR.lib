@@ -1,0 +1,27 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# TPD4E1B06DCKR
+#
+DEF TPD4E1B06DCKR U 0 40 Y Y 1 L N
+F0 "U" -400 700 50 H V L BNN
+F1 "TPD4E1B06DCKR" -401 -801 50 H V L BNN
+F2 "SC70-6" 0 0 50 H I L BNN
+DRAW
+P 2 0 0 10 -400 600 -400 -600 N
+P 2 0 0 10 -400 -600 400 -600 N
+P 2 0 0 10 400 -600 400 600 N
+P 2 0 0 10 400 600 100 600 N
+P 2 0 0 10 -100 600 -400 600 N
+A 0 600 100 1799 3600 0 0 10 N 100 600 -100 600
+X IO1 1 -600 300 200 R 40 40 0 0 B 
+X IO2 2 -600 100 200 R 40 40 0 0 B 
+X IO3 4 -600 -100 200 R 40 40 0 0 B 
+X IO4 5 -600 -300 200 R 40 40 0 0 B 
+X GND 3 600 -500 200 L 40 40 0 0 P 
+ENDDRAW
+ENDDEF
+#
+# End Library

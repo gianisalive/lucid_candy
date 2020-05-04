@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name eeg-rescue)(type Legacy)(uri ${KIPRJMOD}/eeg-rescue.lib)(options "")(descr ""))
+  (lib (name 2019-08-15_22-27-48)(type Legacy)(uri /Users/giancui/Desktop/better_me_too/lucid_candy/library/schematics/2019-08-15_22-27-48.lib)(options "")(descr ads1299))
+)

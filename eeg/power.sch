@@ -1,0 +1,453 @@
+EESchema Schematic File Version 4
+LIBS:eeg-cache
+EELAYER 29 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 2 2
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Regulator_Linear:ADP7182ACPZN U?
+U 1 1 5D8DA0D1
+P 5000 3750
+AR Path="/5D8DA0D1" Ref="U?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DA0D1" Ref="U2"  Part="1" 
+F 0 "U2" H 5000 3475 50  0000 C CNN
+F 1 "ADP7182ACPZN-2.5" H 5000 3384 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:TSOT-23-5" H 5000 3350 50  0001 C CIN
+F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/ADP7182.pdf" H 5000 3250 50  0001 C CNN
+	1    5000 3750
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GNDA #PWR?
+U 1 1 5D8DA0D7
+P 5000 4150
+AR Path="/5D8DA0D7" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DA0D7" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 5000 3900 50  0001 C CNN
+F 1 "GNDA" H 5005 3977 50  0000 C CNN
+F 2 "" H 5000 4150 50  0001 C CNN
+F 3 "" H 5000 4150 50  0001 C CNN
+	1    5000 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5D8DA0DD
+P 5600 3900
+AR Path="/5D8DA0DD" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DA0DD" Ref="C16"  Part="1" 
+F 0 "C16" H 5715 3946 50  0000 L CNN
+F 1 "2.2uF" H 5715 3855 50  0000 L CNN
+F 2 "" H 5638 3750 50  0001 C CNN
+F 3 "~" H 5600 3900 50  0001 C CNN
+	1    5600 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5D8DA0E3
+P 4400 3900
+AR Path="/5D8DA0E3" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DA0E3" Ref="C17"  Part="1" 
+F 0 "C17" H 4515 3946 50  0000 L CNN
+F 1 "2.2uF" H 4515 3855 50  0000 L CNN
+F 2 "" H 4438 3750 50  0001 C CNN
+F 3 "~" H 4400 3900 50  0001 C CNN
+	1    4400 3900
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4600 3650 4400 3650
+Wire Wire Line
+	4400 3750 4400 3650
+Connection ~ 4400 3650
+Wire Wire Line
+	4400 3650 4050 3650
+Wire Wire Line
+	5600 3750 5600 3650
+Wire Wire Line
+	5600 3650 5450 3650
+$Comp
+L Regulator_Linear:ADM7160AUJZ U?
+U 1 1 5D8DD35F
+P 6950 5050
+AR Path="/5D8DD35F" Ref="U?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DD35F" Ref="U3"  Part="1" 
+F 0 "U3" H 6950 4775 50  0000 C CNN
+F 1 "ADM7160AUJZ2.5" H 6950 4684 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:TSOT-23-5" H 6950 4650 50  0001 C CIN
+F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/ADP7182.pdf" H 6950 4550 50  0001 C CNN
+	1    6950 5050
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5D8DD365
+P 6400 4750
+AR Path="/5D8DD365" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DD365" Ref="C19"  Part="1" 
+F 0 "C19" H 6515 4796 50  0000 L CNN
+F 1 "4.7uF" H 6515 4705 50  0000 L CNN
+F 2 "" H 6438 4600 50  0001 C CNN
+F 3 "~" H 6400 4750 50  0001 C CNN
+	1    6400 4750
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5D8DD36B
+P 7400 5650
+AR Path="/5D8DD36B" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DD36B" Ref="C18"  Part="1" 
+F 0 "C18" H 7515 5696 50  0000 L CNN
+F 1 "4.7uF" H 7515 5605 50  0000 L CNN
+F 2 "" H 7438 5500 50  0001 C CNN
+F 3 "~" H 7400 5650 50  0001 C CNN
+	1    7400 5650
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GNDA #PWR?
+U 1 1 5D8DD377
+P 6950 4550
+AR Path="/5D8DD377" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5D8DD377" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 6950 4300 50  0001 C CNN
+F 1 "GNDA" H 6955 4377 50  0000 C CNN
+F 2 "" H 6950 4550 50  0001 C CNN
+F 3 "" H 6950 4550 50  0001 C CNN
+	1    6950 4550
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6550 4950 6400 4950
+Wire Wire Line
+	6400 4900 6400 4950
+Connection ~ 6400 4950
+Wire Wire Line
+	6400 4950 5850 4950
+$Comp
+L Regulator_Linear:ADM7160AUJZ U?
+U 1 1 5D938FAD
+P 8650 3750
+AR Path="/5D938FAD" Ref="U?"  Part="1" 
+AR Path="/5D6FC2AC/5D938FAD" Ref="U4"  Part="1" 
+F 0 "U4" H 8650 3475 50  0000 C CNN
+F 1 "ADM7160AUJZ23.3" H 8650 3384 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:TSOT-23-5" H 8650 3350 50  0001 C CIN
+F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/ADP7182.pdf" H 8650 3250 50  0001 C CNN
+	1    8650 3750
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5D938FB3
+P 8100 3450
+AR Path="/5D938FB3" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D938FB3" Ref="C21"  Part="1" 
+F 0 "C21" H 8215 3496 50  0000 L CNN
+F 1 "4.7uF" H 8215 3405 50  0000 L CNN
+F 2 "" H 8138 3300 50  0001 C CNN
+F 3 "~" H 8100 3450 50  0001 C CNN
+	1    8100 3450
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5D938FB9
+P 9100 4350
+AR Path="/5D938FB9" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D938FB9" Ref="C20"  Part="1" 
+F 0 "C20" H 9215 4396 50  0000 L CNN
+F 1 "4.7uF" H 9215 4305 50  0000 L CNN
+F 2 "" H 9138 4200 50  0001 C CNN
+F 3 "~" H 9100 4350 50  0001 C CNN
+	1    9100 4350
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	9050 3650 9050 3250
+$Comp
+L power:GNDA #PWR?
+U 1 1 5D938FC5
+P 9050 3150
+AR Path="/5D938FC5" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5D938FC5" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 9050 2900 50  0001 C CNN
+F 1 "GNDA" H 9055 2977 50  0000 C CNN
+F 2 "" H 9050 3150 50  0001 C CNN
+F 3 "" H 9050 3150 50  0001 C CNN
+	1    9050 3150
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	8250 3650 8100 3650
+Wire Wire Line
+	8100 3600 8100 3650
+Connection ~ 8100 3650
+Wire Wire Line
+	8100 3300 8100 3250
+Wire Wire Line
+	5400 3850 5450 3850
+Wire Wire Line
+	5450 3850 5450 3650
+Connection ~ 5450 3650
+Wire Wire Line
+	5450 3650 5400 3650
+Wire Wire Line
+	9100 4050 9100 4200
+$Comp
+L Device:D D4
+U 1 1 5D984FB2
+P 9400 4050
+F 0 "D4" H 9400 4174 50  0000 C CNN
+F 1 "D" H 9400 3925 50  0001 C CNN
+F 2 "" H 9400 4050 50  0001 C CNN
+F 3 "~" H 9400 4050 50  0001 C CNN
+	1    9400 4050
+	1    0    0    -1  
+$EndComp
+NoConn ~ 7200 3250
+$Comp
+L power:GNDA #PWR?
+U 1 1 5D975AF1
+P 5800 3200
+AR Path="/5D975AF1" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5D975AF1" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 5800 2950 50  0001 C CNN
+F 1 "GNDA" H 5805 3027 50  0000 C CNN
+F 2 "" H 5800 3200 50  0001 C CNN
+F 3 "" H 5800 3200 50  0001 C CNN
+	1    5800 3200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	5800 3500 5800 3650
+Wire Wire Line
+	7200 3050 7250 3050
+$Comp
+L Device:C C?
+U 1 1 5D959BF1
+P 5800 3350
+AR Path="/5D959BF1" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D959BF1" Ref="C22"  Part="1" 
+F 0 "C22" H 5915 3396 50  0000 L CNN
+F 1 "2.2uF" H 5915 3305 50  0000 L CNN
+F 2 "" H 5838 3200 50  0001 C CNN
+F 3 "~" H 5800 3350 50  0001 C CNN
+	1    5800 3350
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7200 3650 7300 3650
+$Comp
+L ADM8660ARZ-REEL:ADM8660ARZ-REEL U5
+U 1 1 5D94F99C
+P 6500 3350
+F 0 "U5" H 6500 4020 50  0000 C CNN
+F 1 "ADM8660ARZ" H 6500 3929 50  0000 C CNN
+F 2 "SOIC127P600X175-8N" H 6500 3350 50  0001 L BNN
+F 3 "" H 6500 3350 50  0001 L BNN
+F 4 "ADM8660ARZ-REEL" H 6500 3350 50  0001 L BNN "Field4"
+F 5 "SOIC-8 Analog Devices" H 6500 3350 50  0001 L BNN "Field5"
+F 6 "Analog" H 6500 3350 50  0001 L BNN "Field6"
+F 7 "None" H 6500 3350 50  0001 L BNN "Field7"
+F 8 "Ic Reg Switchd Cap Inv 8soic" H 6500 3350 50  0001 L BNN "Field8"
+	1    6500 3350
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7200 3450 7300 3450
+Wire Wire Line
+	7300 3450 7300 3650
+Connection ~ 7300 3650
+$Comp
+L Connector_Generic:Conn_01x09 J1
+U 1 1 5DA50909
+P 9850 4450
+F 0 "J1" H 9930 4446 50  0000 L CNN
+F 1 "Conn_01x09" H 9930 4401 50  0001 L CNN
+F 2 "" H 9850 4450 50  0001 C CNN
+F 3 "~" H 9850 4450 50  0001 C CNN
+	1    9850 4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDA #PWR?
+U 1 1 5DA73537
+P 9100 4500
+AR Path="/5DA73537" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5DA73537" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 9100 4250 50  0001 C CNN
+F 1 "GNDA" H 9105 4327 50  0000 C CNN
+F 2 "" H 9100 4500 50  0001 C CNN
+F 3 "" H 9100 4500 50  0001 C CNN
+	1    9100 4500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9650 4050 9550 4050
+Wire Wire Line
+	9250 4050 9100 4050
+Wire Wire Line
+	9050 3850 9050 4050
+Connection ~ 9050 4050
+Wire Wire Line
+	9050 4050 8650 4050
+Wire Wire Line
+	8100 3250 9050 3250
+Connection ~ 9050 3250
+Wire Wire Line
+	9050 3250 9050 3150
+$Comp
+L Device:C C?
+U 1 1 5D95D57E
+P 7400 3100
+AR Path="/5D95D57E" Ref="C?"  Part="1" 
+AR Path="/5D6FC2AC/5D95D57E" Ref="C23"  Part="1" 
+F 0 "C23" H 7515 3146 50  0000 L CNN
+F 1 "2.2uF" H 7515 3055 50  0000 L CNN
+F 2 "" H 7438 2950 50  0001 C CNN
+F 3 "~" H 7400 3100 50  0001 C CNN
+	1    7400 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDA #PWR?
+U 1 1 5DAB180C
+P 7500 3400
+AR Path="/5DAB180C" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5DAB180C" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 7500 3150 50  0001 C CNN
+F 1 "GNDA" H 7505 3227 50  0000 C CNN
+F 2 "" H 7500 3400 50  0001 C CNN
+F 3 "" H 7500 3400 50  0001 C CNN
+	1    7500 3400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7250 3050 7250 3250
+Wire Wire Line
+	7250 3250 7400 3250
+Wire Wire Line
+	7200 2950 7400 2950
+Wire Wire Line
+	7200 3350 7500 3350
+Wire Wire Line
+	7500 3350 7500 3400
+$Comp
+L power:GNDA #PWR?
+U 1 1 5DADBCA7
+P 7200 2600
+AR Path="/5DADBCA7" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5DADBCA7" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 7200 2350 50  0001 C CNN
+F 1 "GNDA" H 7205 2427 50  0000 C CNN
+F 2 "" H 7200 2600 50  0001 C CNN
+F 3 "" H 7200 2600 50  0001 C CNN
+	1    7200 2600
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7200 2750 7200 2600
+Wire Wire Line
+	7350 5150 7350 5350
+Wire Wire Line
+	7350 5350 6950 5350
+$Comp
+L power:GNDA #PWR?
+U 1 1 5DAF5C09
+P 7400 5800
+AR Path="/5DAF5C09" Ref="#PWR?"  Part="1" 
+AR Path="/5D6FC2AC/5DAF5C09" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 7400 5550 50  0001 C CNN
+F 1 "GNDA" H 7405 5627 50  0000 C CNN
+F 2 "" H 7400 5800 50  0001 C CNN
+F 3 "" H 7400 5800 50  0001 C CNN
+	1    7400 5800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7400 5500 7400 5350
+Connection ~ 9100 4050
+Wire Wire Line
+	9100 4050 9050 4050
+Wire Wire Line
+	4400 4050 4400 4100
+Wire Wire Line
+	4400 4100 5000 4100
+Wire Wire Line
+	5600 4100 5600 4050
+Wire Wire Line
+	5000 4050 5000 4100
+Connection ~ 5000 4100
+Wire Wire Line
+	5000 4100 5600 4100
+Wire Wire Line
+	5000 4100 5000 4150
+Connection ~ 7350 5350
+Wire Wire Line
+	7350 5350 7400 5350
+Wire Wire Line
+	7950 3650 8100 3650
+Wire Wire Line
+	7300 3650 7700 3650
+Connection ~ 7950 3650
+Wire Wire Line
+	7950 3650 7950 5350
+Wire Wire Line
+	7350 4950 7350 4600
+Wire Wire Line
+	7350 4600 6950 4600
+Wire Wire Line
+	6950 4550 6950 4600
+Connection ~ 6950 4600
+Wire Wire Line
+	6950 4600 6400 4600
+Connection ~ 7400 5350
+Wire Wire Line
+	7400 5350 7950 5350
+Wire Wire Line
+	5600 3650 5800 3650
+Connection ~ 5600 3650
+Connection ~ 5800 3650
+Wire Wire Line
+	7700 3650 7700 4250
+Wire Wire Line
+	7700 4250 6250 4250
+Connection ~ 7700 3650
+Wire Wire Line
+	7700 3650 7950 3650
+Text HLabel 6250 4250 0    50   Output ~ 0
+3.3V
+Text HLabel 4050 3650 0    50   Output ~ 0
+-2.5V
+Text HLabel 5850 4950 0    50   Output ~ 0
+2.5V
+Text HLabel 9650 4150 0    50   Input ~ 0
+DIN
+Text HLabel 9650 4250 0    50   Output ~ 0
+DOUT
+Text HLabel 9650 4350 0    50   Output ~ 0
+CLKSEL
+Text HLabel 9650 4450 0    50   Output ~ 0
+SCLK
+Text HLabel 9650 4550 0    50   Output ~ 0
+CS
+Text HLabel 9650 4650 0    50   Output ~ 0
+RESET
+Text HLabel 9650 4750 0    50   Input ~ 0
+DRDY
+Text HLabel 9650 4850 0    50   Input ~ 0
+GND
+$EndSCHEMATC
