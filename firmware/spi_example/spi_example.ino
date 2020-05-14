@@ -13,7 +13,7 @@ void setup() {
   //  spi set up
   SPI.begin();
   SPI.setDataMode(SPI_MODE1);
-  SPI.setClockDivider(SPI_CLOCK_DIV32);
+  SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.setBitOrder(MSBFIRST);
 
   //  pin set up
@@ -38,25 +38,25 @@ void setup() {
   digitalWrite(RESET, HIGH);
   //  wait for VCAP1 to settle to 1.1V
   delay(2000);
-  digitalWrite(RESET,LOW);
-  delay(100);
-  digitalWrite(RESET, HIGH);
-  delay(1000);
-  
+  //  after start pin is pulled high, DRDY oscillates around 250Hz
   digitalWrite(START, HIGH);
 
-  //  at this point, DRDY pin should oscillate around 250Hz
-
-//  SPI.transfer(0b11110100); //CLK_EN
-//  delay(100);
-//  SPI.transfer(0x11); // SDATAC
-//  SPI.transfer(0b11100000); // Internal Ref
-//  delay(100);
-//  SPI.transfer(0b11010101); // Internal test signal
-//  delay(180);
-//  SPI.transfer(0b00010000); // RDATAC
+  //  CLK_EN = 1 -> enable internal clock output
+  //  DR = 110 -> fMOD/4096
+  SPI.transfer(0b01000001);
+  delayMicroseconds(2);
+  SPI.transfer(0b00000000);
+  delayMicroseconds(2);
+  SPI.transfer(0b10110110);
+  delayMicroseconds(2);
 }
 
 void loop() {
-  
+
+}
+
+void getDeviceID() {
+  //  This returns device ID, something like 11111111
+  byte deviceID = SPI.transfer(0x00);
+  Serial.println(deviceID, BIN);
 }
