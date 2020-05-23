@@ -57,11 +57,11 @@ void setup() {
 
   digitalWrite(RESET_PIN, HIGH);
   //  wait for VCAP1 to settle to 1.1V
-  delay(1000);
+  delay(500);
 
   //  RESET & wait 18 clock cycles
   SPI.transfer(RESET_CMD);
-  delayMicroseconds(32);
+  delayMicroseconds(36);
 
   //  Device wakes up automatically at RDATAC (Read Data Continous) mode.
   //  Send SDATAC (Stop Data Continous) command in order to write to registers.
@@ -71,16 +71,20 @@ void setup() {
   //  CONFIG1
   //  CLK_EN = 1 -> enable internal clock output
   //  DR = 110 -> fMOD/4096
-  writeToRegister(0b10110110, 0x01);
+//  writeToRegister(0b10110110, 0x01);
+  writeToRegister(0x96, 0x01);
+  delay(10);
 
   //CONFIG2 C0h
-  writeToRegister(0b11000000, 0x02);
-  delayMicroseconds(20);
+//  writeToRegister(0b11000000, 0x02);
+  writeToRegister(0xC0, 0x02);
+  delay(10);
   
   //  CONFIG3
   //  PDB_REFBUF = 1 -> use internal reference
-  writeToRegister(0b11100000, 0x03);
-  delay(1000);
+//  writeToRegister(0b11101100, 0x03);
+  writeToRegister(0xE0, 0x03);
+  delay(2000);
 
   //  short channel 1 input
   writeToRegister(0b00000001, 0x05);
@@ -114,16 +118,18 @@ void setup() {
 void loop() {
   delay(500);
   Serial.println("------- DATA BEGIN -------");
-  Serial.println("CONFIG1: ");
-  readRegister(0x01);
-  Serial.println("CONFIG2: ");
-  readRegister(0x02);
-  Serial.println("CONFIG3: ");
-  readRegister(0x03);
-  Serial.println("Channel 1: ");
-  readRegister(0x05);
+  readDataContinuous(8);
   Serial.println("------- DATA END -------");
   delay(500);
+}
+
+//  This returns device ID, something like 00111110
+//  The last two bits indicate how many channels is availble
+//  00 -> 4 channels, 01 -> 6 channels, 10 -> 8 channels
+byte getDeviceID() {
+  readRegister(0x00);
+  byte deviceID = SPI.transfer(0x00);
+  return deviceID;
 }
 
 //  Read every bit including leading zero
@@ -134,22 +140,20 @@ void readByteFull(byte byteOfData) {
   Serial.print("\n");
 }
 
-byte writeToRegister(byte command, byte address) {
+void writeToRegister(byte command, byte address) {
   byte _address = WREG_CMD | address;
   
   Serial.println("address: ");
   readByteFull(_address); //  Display Data
+  Serial.println("command: ");
+  readByteFull(command);
   
   SPI.transfer(_address);
   delayMicroseconds(8);
   //  read 1 register
   SPI.transfer(0x00);
   //  No Operation (NOP) to retrieve the data
-  byte rData = SPI.transfer(command);
-
-  Serial.println("byte read: ");
-  readByteFull(rData); //  Display Data
-  return rData;
+  SPI.transfer(command);
 }
 
 byte readRegister(byte address) {
@@ -172,11 +176,24 @@ byte readRegister(byte address) {
   return rData;
 }
 
-byte getDeviceID() {
-  readRegister(0x00);
-  //  This returns device ID, something like 00111110
-  //  The last two bits indicate how many channels is availble
-  //  00 -> 4 channels, 01 -> 6 channels, 10 -> 8 channels
-  byte deviceID = SPI.transfer(0x00);
-  return deviceID;
+void readDataContinuous(int channel) {
+  int bitsToRead = 3 + (3 * channel);
+  SPI.transfer(RDATAC_CMD);
+  for (int i = 0; i < bitsToRead; i += 1) {
+    byte data = SPI.transfer(0x00);
+    readByteFull(data);
+  }
+  delay(10);
+  SPI.transfer(SDATAC_CMD);
+}
+
+void readData() {
+  SPI.transfer(RDATA_CMD);
+  delayMicroseconds(8);
+  for (int i = 0; i < 27; i++) {
+    byte data = SPI.transfer(0x00);
+    Serial.println("bytes received: ");
+    readByteFull(data);
+  }
+  delay(500);
 }
