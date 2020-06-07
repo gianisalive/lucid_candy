@@ -224,6 +224,7 @@ void readDataContinuous(int channelNumber) {
       firstChannelByte = (currentChannel + 1) * 3 - 4;
       lastChannelByte = (currentChannel + 1) * 3;
     }
+    delayMicroseconds(8);
   }
   Serial.print("STAT");
   Serial.print("  |  ");
@@ -238,6 +239,10 @@ void readDataContinuous(int channelNumber) {
     Serial.print(channelData[x], BIN);
     Serial.print("  |  ");
     Serial.print(channelData[x], HEX);
+    Serial.print("  |  ");
+    Serial.print(channelData[x]);
+    Serial.print("  |  ");
+    Serial.print(convertChannelData(channelData[x]));
     Serial.print("\n");
   }
   delay(10);
@@ -249,6 +254,12 @@ void readData() {
   delayMicroseconds(8);
   for (int i = 0; i < 27; i++) {
     byte data = SPI.transfer(0x00);
+    Serial.println(data);
   }
-  delay(500);
+  delay(10);
+}
+
+float convertChannelData(long data) {
+  float scaleFactor = 4.5 / 1 / (2 ^ 23 - 1);
+  return sqrt(data * scaleFactor);
 }
