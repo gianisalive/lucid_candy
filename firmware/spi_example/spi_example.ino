@@ -26,7 +26,7 @@ const int CLKSEL_PIN = 7;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("=========== Setting SPI ===========");
+  Serial.println("Setting SPI......");
   //  SPI Set Up
   SPI.begin();
   //  data sheet pg.12 -> SPI setting: CPOL = 0, CPHA = 1
@@ -35,7 +35,7 @@ void setup() {
   SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.setBitOrder(MSBFIRST);
 
-  Serial.println("=========== Setting Pins ===========");
+  Serial.println("Setting Pins......");
   //  Pin Set Up
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, LOW);
@@ -52,13 +52,13 @@ void setup() {
 
   //  TODO: All the timing can be improved.
 
-  Serial.println("=========== Selecting Oscillator ===========");
+  Serial.println("Selecting Oscillator......");
   //  Use internal oscillator. It oscillates at 2.048 MHz.
   //  Tclk: 2.048 MHz
   digitalWrite(CLKSEL_PIN, HIGH);
   delay(100);
 
-  Serial.println("=========== Resetting ===========");
+  Serial.println("Resetting......");
   digitalWrite(RESET_PIN, HIGH);
   //  wait for VCAP1 to settle to 1.1V
   delay(500);
@@ -67,60 +67,69 @@ void setup() {
   SPI.transfer(RESET_CMD);
   delayMicroseconds(36);
 
-  Serial.println("=========== Stop Data Continuous Mode ===========");
+  Serial.println("Stopping Data Continuous Mode......");
   //  Device wakes up automatically at RDATAC (Read Data Continous) mode.
   //  Send SDATAC (Stop Data Continous) command in order to write to registers.
   SPI.transfer(SDATAC_CMD);
   delayMicroseconds(10);
 
-  Serial.println("=========== Setting CONFIG1 ===========");
+  Serial.println("Device ID: ");
+  Serial.println(getDeviceID(), BIN);
+
+  Serial.println("Setting CONFIG1......");
   //  CONFIG1
   //  CLK_EN = 1 -> enable internal clock output
   //  DR = 110 -> fMOD/4096
-  //  writeToRegister(0b10110110, 0x01);
   writeToRegister(0x96, 0x01);
   delay(10);
 
-  Serial.println("=========== Setting CONFIG2 ===========");
+  Serial.println("Setting CONFIG2......");
   //CONFIG2 C0h
-  //  writeToRegister(0b11000000, 0x02);
   writeToRegister(0xC0, 0x02);
   delay(10);
 
-  Serial.println("=========== Setting CONFIG3 ===========");
+  Serial.println("Setting CONFIG3......");
   //  CONFIG3
   //  PDB_REFBUF = 1 -> use internal reference
-  //  writeToRegister(0b11101100, 0x03);
   writeToRegister(0xE0, 0x03);
   delay(2000);
 
-  Serial.println("=========== Setting Channels ===========");
+  Serial.println("Setting Channels......");
   //  short channel 1 input
-  writeToRegister(0b00000001, 0x05);
+  writeToRegister(0b00000110, 0x05);
+  delayMicroseconds(8);
   //  short channel 2 input
-  writeToRegister(0b00000001, 0x06);
+  writeToRegister(0b00000110, 0x06);
+  delayMicroseconds(8);
   //  short channel 3 input
-  writeToRegister(0b00000001, 0x07);
+  writeToRegister(0b00000110, 0x07);
+  delayMicroseconds(8);
   //  short channel 4 input
-  writeToRegister(0b00000001, 0x08);
+  writeToRegister(0b00000110, 0x08);
+  delayMicroseconds(8);
   //  short channel 5 input
-  writeToRegister(0b00000001, 0x09);
+  writeToRegister(0b00000110, 0x09);
+  delayMicroseconds(8);
   //  short channel 6 input
-  writeToRegister(0b00000001, 0x0A);
+  writeToRegister(0b00000110, 0x0A);
+  delayMicroseconds(8);
   //  short channel 7 input
-  writeToRegister(0b00000001, 0x0B);
+  writeToRegister(0b00000110, 0x0B);
+  delayMicroseconds(8);
   //  short channel 8 input
-  writeToRegister(0b00000001, 0x0C);
-  //  generate test signal
-  //  CONFIG2 INT_CAL = 1
-  //  SPI.transfer(0b01000010);
-  //  delayMicroseconds(2);
-  //  SPI.transfer(0b00000000);
-  //  delayMicroseconds(2);
-  //  SPI.transfer(0b11110011);
-  //  delayMicroseconds(20);
+  writeToRegister(0b00000110, 0x0C);
+  delayMicroseconds(8);
 
-  Serial.println("=========== Start ===========");
+  Serial.println("Enabling BIASP.......");
+  writeToRegister(0b11111111, 0x0D);
+
+  Serial.println("Enabling BIASN.......");
+  writeToRegister(0b11111111, 0x0E);
+
+  Serial.println("Closing SRB1......");
+  writeToRegister(0b00100000, 0x15);
+
+  Serial.println("Starting......");
   //  START
   digitalWrite(START_PIN, HIGH);
 }
@@ -194,7 +203,7 @@ void readDataContinuous(int channelNumber) {
   delayMicroseconds(8);
   //  Bit mask: long is 32 bits variable, only select 0 - 23rd bits
   long mask = 0x00FFFFFF;
-  
+
   unsigned long stat;
   unsigned long channelData [channelNumber];
 
@@ -206,7 +215,6 @@ void readDataContinuous(int channelNumber) {
 
   for (byte i = 0; i < bytesToRead; i += 1) {
     byte data = SPI.transfer(0x00);
-    Serial.println(data, BIN);
     if (i < 3) {
       stat = stat << 8;
       stat = stat | data;
@@ -234,7 +242,7 @@ void readDataContinuous(int channelNumber) {
   Serial.print("\n");
   for (byte x = 0; x < channelNumber; x += 1) {
     Serial.print("Channel");
-    Serial.print(x+1);
+    Serial.print(x + 1);
     Serial.print("  |  ");
     Serial.print(channelData[x], BIN);
     Serial.print("  |  ");
@@ -260,6 +268,12 @@ void readData() {
 }
 
 float convertChannelData(long data) {
-  float scaleFactor = 4.5 / 1 / (2 ^ 23 - 1);
-  return sqrt(data * scaleFactor);
+//  float scaleFactor = 4.5 / 1 / (2 ^ 23 - 1);
+  float lsb = (2 * 4.5 / 1) / (pow(2, 24));
+  long maxValue = pow(2L, 23L) - 1L;
+  if (data > maxValue) {
+    long negativeValue = data - maxValue - 1;
+    return (negativeValue - pow(2, 23)) * lsb;
+  }
+  return data * lsb;
 }
