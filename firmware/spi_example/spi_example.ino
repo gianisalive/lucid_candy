@@ -91,43 +91,46 @@ void setup() {
   Serial.println("Setting CONFIG3......");
   //  CONFIG3
   //  PDB_REFBUF = 1 -> use internal reference
-  writeToRegister(0xE0, 0x03);
+  writeToRegister(0xEC, 0x03);
   delay(2000);
 
   Serial.println("Setting Channels......");
   //  short channel 1 input
-  writeToRegister(0b00000110, 0x05);
+  writeToRegister(0b00000000, 0x05);
   delayMicroseconds(8);
   //  short channel 2 input
-  writeToRegister(0b00000110, 0x06);
+  writeToRegister(0b00000000, 0x06);
   delayMicroseconds(8);
   //  short channel 3 input
-  writeToRegister(0b00000110, 0x07);
+  writeToRegister(0b00000000, 0x07);
   delayMicroseconds(8);
   //  short channel 4 input
-  writeToRegister(0b00000110, 0x08);
+  writeToRegister(0b00000000, 0x08);
   delayMicroseconds(8);
   //  short channel 5 input
-  writeToRegister(0b00000110, 0x09);
+  writeToRegister(0b00000000, 0x09);
   delayMicroseconds(8);
   //  short channel 6 input
-  writeToRegister(0b00000110, 0x0A);
+  writeToRegister(0b00000000, 0x0A);
   delayMicroseconds(8);
   //  short channel 7 input
-  writeToRegister(0b00000110, 0x0B);
+  writeToRegister(0b00000000, 0x0B);
   delayMicroseconds(8);
   //  short channel 8 input
-  writeToRegister(0b00000110, 0x0C);
+  writeToRegister(0b00000000, 0x0C);
+  delayMicroseconds(8);
+
+  //  TEST
+  writeToRegister(0b11010011, 0x02);
   delayMicroseconds(8);
 
   Serial.println("Enabling BIASP.......");
   writeToRegister(0b11111111, 0x0D);
+  delayMicroseconds(8);
 
   Serial.println("Enabling BIASN.......");
   writeToRegister(0b11111111, 0x0E);
-
-  Serial.println("Closing SRB1......");
-  writeToRegister(0b00100000, 0x15);
+  delayMicroseconds(8);
 
   Serial.println("Starting......");
   //  START
@@ -135,19 +138,21 @@ void setup() {
 }
 
 void loop() {
-  delay(500);
   Serial.println("------- DATA BEGIN -------");
   readDataContinuous(8);
+  Serial.print("converted data: ");
+  Serial.print(convertChannelData(0x147AE1));
+  Serial.print(" | ");
+  Serial.println(convertChannelData(0xD70A3D));
+  delay(10);
   Serial.println("------- DATA END -------");
-  delay(500);
 }
 
 //  This returns device ID, something like 00111110
 //  The last two bits indicate how many channels is availble
 //  00 -> 4 channels, 01 -> 6 channels, 10 -> 8 channels
 byte getDeviceID() {
-  readRegister(0x00);
-  byte deviceID = SPI.transfer(0x00);
+  byte deviceID = readRegister(0x00);
   return deviceID;
 }
 
@@ -199,8 +204,8 @@ void readDataContinuous(int channelNumber) {
   //  3 bytes per channel + 3 bytes status data at the beginning
   //  data sheet pg. 39
   int bytesToRead = 3 + (3 * channelNumber);
-  SPI.transfer(RDATAC_CMD);
-  delayMicroseconds(8);
+  Serial.print("bytes to read: ");
+  Serial.println(bytesToRead);
   //  Bit mask: long is 32 bits variable, only select 0 - 23rd bits
   long mask = 0x00FFFFFF;
 
@@ -213,7 +218,10 @@ void readDataContinuous(int channelNumber) {
   byte firstChannelByte = (currentChannel + 1) * 3 - 4;
   byte lastChannelByte = (currentChannel + 1) * 3;
 
-  for (byte i = 0; i < bytesToRead; i += 1) {
+  SPI.transfer(RDATAC_CMD);
+  delay(4);
+
+  for (int i = 0; i < bytesToRead; i += 1) {
     byte data = SPI.transfer(0x00);
     if (i < 3) {
       stat = stat << 8;
@@ -232,9 +240,9 @@ void readDataContinuous(int channelNumber) {
       firstChannelByte = (currentChannel + 1) * 3 - 4;
       lastChannelByte = (currentChannel + 1) * 3;
     }
-    delayMicroseconds(8);
   }
-  Serial.print("STAT");
+
+  Serial.print("STAT    ");
   Serial.print("  |  ");
   Serial.print(stat, BIN);
   Serial.print("  |  ");
@@ -250,10 +258,10 @@ void readDataContinuous(int channelNumber) {
     Serial.print("  |  ");
     Serial.print(channelData[x]);
     Serial.print("  |  ");
-    Serial.print(convertChannelData(channelData[x]));
+    Serial.print(convertChannelData(channelData[x]), 7);
     Serial.print("\n");
   }
-  delay(10);
+  delay(30);
   SPI.transfer(SDATAC_CMD);
 }
 
@@ -268,12 +276,11 @@ void readData() {
 }
 
 float convertChannelData(long data) {
-//  float scaleFactor = 4.5 / 1 / (2 ^ 23 - 1);
   float lsb = (2 * 4.5 / 1) / (pow(2, 24));
   long maxValue = pow(2L, 23L) - 1L;
   if (data > maxValue) {
     long negativeValue = data - maxValue - 1;
-    return (negativeValue - pow(2, 23)) * lsb;
+    return (negativeValue - pow(2L, 23L)) * lsb;
   }
   return data * lsb;
 }
