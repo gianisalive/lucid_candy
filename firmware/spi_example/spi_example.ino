@@ -26,7 +26,15 @@ const int CLKSEL_PIN = 7;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Setting SPI......");
+  
+  /*
+  * Buffer (stream of bytes) to indicate the device characteristic 
+  * data acquisition has begun
+  */
+  byte deviceCharacteristics [8];
+  deviceCharacteristics[0] = 0x80;
+  deviceCharacteristics[1] = 0x01;
+  
   //  SPI Set Up
   SPI.begin();
   //  data sheet pg.12 -> SPI setting: CPOL = 0, CPHA = 1
@@ -35,7 +43,8 @@ void setup() {
   SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.setBitOrder(MSBFIRST);
 
-  Serial.println("Setting Pins......");
+  //  TODO: All the timing can be improved.
+
   //  Pin Set Up
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, LOW);
@@ -48,53 +57,52 @@ void setup() {
   //  Pull CLKSEL_PIN low if external clock signal is provided
   pinMode(CLKSEL_PIN, OUTPUT);
   digitalWrite(CLKSEL_PIN, LOW);
-  delay(2000);
+  delay(1000);
 
-  //  TODO: All the timing can be improved.
-
-  Serial.println("Selecting Oscillator......");
+  /*************** Power Up Sequence ***************/
+  //  Power up sequence ----- data sheet pg.62
   //  Use internal oscillator. It oscillates at 2.048 MHz.
   //  Tclk: 2.048 MHz
   digitalWrite(CLKSEL_PIN, HIGH);
   delay(100);
-
-  Serial.println("Resetting......");
   digitalWrite(RESET_PIN, HIGH);
   //  wait for VCAP1 to settle to 1.1V
   delay(500);
-
   //  RESET & wait 18 clock cycles
   SPI.transfer(RESET_CMD);
   delayMicroseconds(36);
-
-  Serial.println("Stopping Data Continuous Mode......");
   //  Device wakes up automatically at RDATAC (Read Data Continous) mode.
   //  Send SDATAC (Stop Data Continous) command in order to write to registers.
   SPI.transfer(SDATAC_CMD);
   delayMicroseconds(10);
 
-  Serial.println("Device ID: ");
-  Serial.println(getDeviceID(), BIN);
-
-  Serial.println("Setting CONFIG1......");
+  //  Get device ID
+  deviceCharacteristics[2] = getDeviceID();
+  
   //  CONFIG1
   //  CLK_EN = 1 -> enable internal clock output
   //  DR = 110 -> fMOD/4096
   writeToRegister(0x96, 0x01);
   delay(10);
+  deviceCharacteristics[3] = 0x96;
 
-  Serial.println("Setting CONFIG2......");
   //CONFIG2 C0h
   writeToRegister(0xC0, 0x02);
   delay(10);
+  deviceCharacteristics[4] = 0x96;
 
-  Serial.println("Setting CONFIG3......");
   //  CONFIG3
   //  PDB_REFBUF = 1 -> use internal reference
   writeToRegister(0xEC, 0x03);
   delay(2000);
+  deviceCharacteristics[5] = 0x96;
 
-  Serial.println("Setting Channels......");
+  //  Bytes indicating that the device characteristic buffer has ended
+  deviceCharacteristics[6] = 0x80;
+  deviceCharacteristics[7] = 0x02;
+
+  Serial.write(deviceCharacteristics, 8);
+
   //  short channel 1 input
   writeToRegister(0b00000000, 0x05);
   delayMicroseconds(8);
@@ -124,28 +132,18 @@ void setup() {
   writeToRegister(0b11010011, 0x02);
   delayMicroseconds(8);
 
-  Serial.println("Enabling BIASP.......");
   writeToRegister(0b11111111, 0x0D);
   delayMicroseconds(8);
 
-  Serial.println("Enabling BIASN.......");
   writeToRegister(0b11111111, 0x0E);
   delayMicroseconds(8);
 
-  Serial.println("Starting......");
   //  START
   digitalWrite(START_PIN, HIGH);
 }
 
 void loop() {
-  Serial.println("------- DATA BEGIN -------");
-  readDataContinuous(8);
-  Serial.print("converted data: ");
-  Serial.print(convertChannelData(0x147AE1));
-  Serial.print(" | ");
-  Serial.println(convertChannelData(0xD70A3D));
-  delay(10);
-  Serial.println("------- DATA END -------");
+  
 }
 
 //  This returns device ID, something like 00111110
@@ -156,21 +154,8 @@ byte getDeviceID() {
   return deviceID;
 }
 
-//  Read every bit including leading zero
-void readBytesFull(byte byteOfData, int bitNum) {
-  for (byte i = 0; i < bitNum; i++) {
-    Serial.print(bitRead(byteOfData, (bitNum - 1) - i));
-  }
-  Serial.print("\n");
-}
-
 void writeToRegister(byte command, byte address) {
   byte _address = WREG_CMD | address;
-
-  Serial.println("address: ");
-  readBytesFull(_address, 8); //  Display Data
-  Serial.println("command: ");
-  readBytesFull(command, 8);
 
   SPI.transfer(_address);
   delayMicroseconds(8);
@@ -182,27 +167,19 @@ void writeToRegister(byte command, byte address) {
 
 byte readRegister(byte address) {
   byte _address = PREG_CMD | address;
-
-  Serial.println("address: ");
-  readBytesFull(_address, 8); //  Display Data
-
   SPI.transfer(_address);
   delayMicroseconds(8);
   //  read 1 register
   SPI.transfer(0x00);
   //  No Operation (NOP) to retrieve the data
   byte rData = SPI.transfer(0x00);
-
-  Serial.println("byte read: ");
-  readBytesFull(rData, 8); //  Display Data
-
   delayMicroseconds(2);
   return rData;
 }
 
 void readDataContinuous(int channelNumber) {
   //  3 bytes per channel + 3 bytes status data at the beginning
-  //  data sheet pg. 39
+  //  data sheet pg.39
   int bytesToRead = 3 + (3 * channelNumber);
   Serial.print("bytes to read: ");
   Serial.println(bytesToRead);
