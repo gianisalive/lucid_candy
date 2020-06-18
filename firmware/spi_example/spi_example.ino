@@ -27,14 +27,6 @@ const int CLKSEL_PIN = 7;
 void setup() {
   Serial.begin(9600);
   
-  /*
-  * Buffer (stream of bytes) to indicate the device characteristic 
-  * data acquisition has begun
-  */
-  byte deviceCharacteristics [8];
-  deviceCharacteristics[0] = 0x80;
-  deviceCharacteristics[1] = 0x01;
-  
   //  SPI Set Up
   SPI.begin();
   //  data sheet pg.12 -> SPI setting: CPOL = 0, CPHA = 1
@@ -42,9 +34,7 @@ void setup() {
   SPI.setDataMode(SPI_MODE1);
   SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.setBitOrder(MSBFIRST);
-
-  //  TODO: All the timing can be improved.
-
+  
   //  Pin Set Up
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, LOW);
@@ -57,76 +47,11 @@ void setup() {
   //  Pull CLKSEL_PIN low if external clock signal is provided
   pinMode(CLKSEL_PIN, OUTPUT);
   digitalWrite(CLKSEL_PIN, LOW);
-  delay(1000);
 
-  /*************** Power Up Sequence ***************/
-  //  Power up sequence ----- data sheet pg.62
-  //  Use internal oscillator. It oscillates at 2.048 MHz.
-  //  Tclk: 2.048 MHz
-  digitalWrite(CLKSEL_PIN, HIGH);
-  delay(100);
-  digitalWrite(RESET_PIN, HIGH);
-  //  wait for VCAP1 to settle to 1.1V
-  delay(500);
-  //  RESET & wait 18 clock cycles
-  SPI.transfer(RESET_CMD);
-  delayMicroseconds(36);
-  //  Device wakes up automatically at RDATAC (Read Data Continous) mode.
-  //  Send SDATAC (Stop Data Continous) command in order to write to registers.
-  SPI.transfer(SDATAC_CMD);
-  delayMicroseconds(10);
-
-  //  Get device ID
-  deviceCharacteristics[2] = getDeviceID();
-  
-  //  CONFIG1
-  //  CLK_EN = 1 -> enable internal clock output
-  //  DR = 110 -> fMOD/4096
-  writeToRegister(0x96, 0x01);
-  delay(10);
-  deviceCharacteristics[3] = 0x96;
-
-  //CONFIG2 C0h
-  writeToRegister(0xC0, 0x02);
-  delay(10);
-  deviceCharacteristics[4] = 0x96;
-
-  //  CONFIG3
-  //  PDB_REFBUF = 1 -> use internal reference
-  writeToRegister(0xEC, 0x03);
-  delay(2000);
-  deviceCharacteristics[5] = 0x96;
-
-  //  Bytes indicating that the device characteristic buffer has ended
-  deviceCharacteristics[6] = 0x80;
-  deviceCharacteristics[7] = 0x02;
-
-  Serial.write(deviceCharacteristics, 8);
-
-  //  short channel 1 input
-  writeToRegister(0b00000000, 0x05);
-  delayMicroseconds(8);
-  //  short channel 2 input
-  writeToRegister(0b00000000, 0x06);
-  delayMicroseconds(8);
-  //  short channel 3 input
-  writeToRegister(0b00000000, 0x07);
-  delayMicroseconds(8);
-  //  short channel 4 input
-  writeToRegister(0b00000000, 0x08);
-  delayMicroseconds(8);
-  //  short channel 5 input
-  writeToRegister(0b00000000, 0x09);
-  delayMicroseconds(8);
-  //  short channel 6 input
-  writeToRegister(0b00000000, 0x0A);
-  delayMicroseconds(8);
-  //  short channel 7 input
-  writeToRegister(0b00000000, 0x0B);
-  delayMicroseconds(8);
-  //  short channel 8 input
-  writeToRegister(0b00000000, 0x0C);
-  delayMicroseconds(8);
+  //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
+  //  The output will have around 20uV offsets ------ data sheet pg.14 figure14
+  //  This offset is usually remedied by supplying voltage to the skin to a common level
+  powerUpSequence();
 
   //  TEST
   writeToRegister(0b11010011, 0x02);
@@ -140,10 +65,70 @@ void setup() {
 
   //  START
   digitalWrite(START_PIN, HIGH);
+  byte randomByte = 0x0B;
+  Serial.write(randomByte);
 }
 
 void loop() {
-  
+  readDataContinuous(8);
+}
+
+void handleSerialRead() {
+  byte incomingByte = 0;
+  if (Serial.available() > 0) {
+    incomingByte = Serial.read();
+    byte temp = 0x0C;
+    Serial.write(temp);
+  }
+}
+
+//  Power up sequence ------ data sheet pg.62
+//  The sequence is modified the generate internal test data
+void powerUpSequence() {
+  digitalWrite(CLKSEL_PIN, HIGH);
+  delay(10);
+  digitalWrite(RESET_PIN, HIGH);
+  //  wait for VCAP1 to settle to 1.1V
+  delay(500);
+  SPI.transfer(RESET_CMD);
+  delayMicroseconds(36);
+  //  Device wakes up automatically at RDATAC (Read Data Continous) mode.
+  //  Send SDATAC (Stop Data Continous) command in order to write to registers.
+  SPI.transfer(SDATAC_CMD);
+  delayMicroseconds(10);
+  //  CONFIG1
+  //  CLK_EN = 1 -> enable internal clock output
+  //  DR = 110 -> fMOD/4096
+  writeToRegister(0x96, 0x01);
+  delay(10);
+  //  CONFIG2 ------ data sheet pg.47
+  //  configured to generate internal test signal
+  writeToRegister(0xC0, 0x02);
+  delay(10);
+  //  CONFIG3 ------ data sheet pg.48
+  //  PDB_REFBUF = 1 -> use internal reference
+  //  BIASREF_INT = 1 -> enable internal reference signal, this is used to establish
+  //  common ground and prevent significant voltage offset
+  writeToRegister(0xEC, 0x03);
+  delay(50);
+  //  CHnSET ------ data sheet pg.50
+  //  all the channels' gain are set to 24 and generate internal test signals
+  writeToRegister(0b01100101, 0x05);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x06);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x07);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x08);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x09);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x0A);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x0B);
+  delayMicroseconds(8);
+  writeToRegister(0b01100101, 0x0C);
+  delayMicroseconds(8);
 }
 
 //  This returns device ID, something like 00111110
@@ -156,7 +141,6 @@ byte getDeviceID() {
 
 void writeToRegister(byte command, byte address) {
   byte _address = WREG_CMD | address;
-
   SPI.transfer(_address);
   delayMicroseconds(8);
   //  read 1 register
@@ -181,8 +165,6 @@ void readDataContinuous(int channelNumber) {
   //  3 bytes per channel + 3 bytes status data at the beginning
   //  data sheet pg.39
   int bytesToRead = 3 + (3 * channelNumber);
-  Serial.print("bytes to read: ");
-  Serial.println(bytesToRead);
   //  Bit mask: long is 32 bits variable, only select 0 - 23rd bits
   long mask = 0x00FFFFFF;
 
@@ -196,6 +178,7 @@ void readDataContinuous(int channelNumber) {
   byte lastChannelByte = (currentChannel + 1) * 3;
 
   SPI.transfer(RDATAC_CMD);
+  //  TODO: read data on DRDY falling edge
   delay(4);
 
   for (int i = 0; i < bytesToRead; i += 1) {
@@ -218,26 +201,6 @@ void readDataContinuous(int channelNumber) {
       lastChannelByte = (currentChannel + 1) * 3;
     }
   }
-
-  Serial.print("STAT    ");
-  Serial.print("  |  ");
-  Serial.print(stat, BIN);
-  Serial.print("  |  ");
-  Serial.print(stat, HEX);
-  Serial.print("\n");
-  for (byte x = 0; x < channelNumber; x += 1) {
-    Serial.print("Channel");
-    Serial.print(x + 1);
-    Serial.print("  |  ");
-    Serial.print(channelData[x], BIN);
-    Serial.print("  |  ");
-    Serial.print(channelData[x], HEX);
-    Serial.print("  |  ");
-    Serial.print(channelData[x]);
-    Serial.print("  |  ");
-    Serial.print(convertChannelData(channelData[x]), 7);
-    Serial.print("\n");
-  }
   delay(30);
   SPI.transfer(SDATAC_CMD);
 }
@@ -253,7 +216,7 @@ void readData() {
 }
 
 float convertChannelData(long data) {
-  float lsb = (2 * 4.5 / 1) / (pow(2, 24));
+  float lsb = (2 * 4.5 / 24) / (pow(2, 24));
   long maxValue = pow(2L, 23L) - 1L;
   if (data > maxValue) {
     long negativeValue = data - maxValue - 1;
