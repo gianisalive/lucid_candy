@@ -24,9 +24,17 @@ const int CS_PIN = 5;
 const int DRDY_PIN = 6;
 const int CLKSEL_PIN = 7;
 
+//  Device Characteristics
+//  Variables are set by getDeviceCharacteristics function
+int totalChannels = 0;
+byte configOne = 0;
+byte configTwo = 0;
+byte configThree = 0;
+bool testPassed = false;
+
 void setup() {
   Serial.begin(9600);
-  
+
   //  SPI Set Up
   SPI.begin();
   //  data sheet pg.12 -> SPI setting: CPOL = 0, CPHA = 1
@@ -34,7 +42,7 @@ void setup() {
   SPI.setDataMode(SPI_MODE1);
   SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.setBitOrder(MSBFIRST);
-  
+
   //  Pin Set Up
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, LOW);
@@ -48,12 +56,12 @@ void setup() {
   pinMode(CLKSEL_PIN, OUTPUT);
   digitalWrite(CLKSEL_PIN, LOW);
 
-  //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
-  //  The output will have around 20uV offsets ------ data sheet pg.14 figure14
-  //  This offset is usually remedied by supplying voltage to the skin to a common level
-  powerUpSequence();
+  //  data sheet ------ pg.62
+  // Configured to generate internal test signals
+  startPowerUpSequence();
+  //  Make sure all the registers are written
+  getDeviceCharacteristics();
 
-  //  TEST
   writeToRegister(0b11010011, 0x02);
   delayMicroseconds(8);
 
@@ -65,12 +73,14 @@ void setup() {
 
   //  START
   digitalWrite(START_PIN, HIGH);
-  byte randomByte = 0x0B;
-  Serial.write(randomByte);
+  delayMicroseconds(8);
 }
 
 void loop() {
-  readDataContinuous(8);
+}
+
+void onRising() {
+  Serial.println("rising......");
 }
 
 void handleSerialRead() {
@@ -84,7 +94,7 @@ void handleSerialRead() {
 
 //  Power up sequence ------ data sheet pg.62
 //  The sequence is modified the generate internal test data
-void powerUpSequence() {
+void startPowerUpSequence() {
   digitalWrite(CLKSEL_PIN, HIGH);
   delay(10);
   digitalWrite(RESET_PIN, HIGH);
@@ -102,7 +112,7 @@ void powerUpSequence() {
   writeToRegister(0x96, 0x01);
   delay(10);
   //  CONFIG2 ------ data sheet pg.47
-  //  configured to generate internal test signal
+  //  configured to generate internal test signal at DC (direct current)
   writeToRegister(0xC0, 0x02);
   delay(10);
   //  CONFIG3 ------ data sheet pg.48
@@ -112,7 +122,7 @@ void powerUpSequence() {
   writeToRegister(0xEC, 0x03);
   delay(50);
   //  CHnSET ------ data sheet pg.50
-  //  all the channels' gain are set to 24 and generate internal test signals
+  //  All the channels' gain are set to 24 and generate internal test signals
   writeToRegister(0b01100101, 0x05);
   delayMicroseconds(8);
   writeToRegister(0b01100101, 0x06);
@@ -129,6 +139,30 @@ void powerUpSequence() {
   delayMicroseconds(8);
   writeToRegister(0b01100101, 0x0C);
   delayMicroseconds(8);
+}
+
+void getDeviceCharacteristics() {
+  //  First two bits determine number of available channels ------ data sheet pg.45
+  const byte numberOfChannels = getDeviceID() & 0x03;
+  if (numberOfChannels == 0x00) {
+    totalChannels = 4;
+  }
+  if (numberOfChannels == 0x01) {
+    totalChannels = 6;
+  }
+  if (numberOfChannels == 0x2) {
+    totalChannels = 8;
+  }
+  configOne = readRegister(0x01);
+  configTwo = readRegister(0x02);
+  configThree = readRegister(0x03);
+}
+
+bool testChannelAmplitude() {
+  //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
+  //  The output will have around 20uV offsets ------ data sheet pg.14 figure14
+  //  This offset is usually remedied by supplying voltage to drive the skin to common ground
+  byte tolerance = 80;
 }
 
 //  This returns device ID, something like 00111110
@@ -161,26 +195,32 @@ byte readRegister(byte address) {
   return rData;
 }
 
-void readDataContinuous(int channelNumber) {
+void readData() {
+  SPI.transfer(RDATA_CMD);
+}
+
+// Reserved for future use when external interrupt can tick on 2us pulse
+void readDataContinuous() {
+  SPI.transfer(RDATAC_CMD);
+}
+
+void stopDataContinuous() {
+  SPI.transfer(SDATAC_CMD);
+}
+
+void processIncomingData() {
   //  3 bytes per channel + 3 bytes status data at the beginning
-  //  data sheet pg.39
-  int bytesToRead = 3 + (3 * channelNumber);
+  //  data sheet ------ pg.39
+  int bytesToRead = 3 + (3 * totalChannels);
   //  Bit mask: long is 32 bits variable, only select 0 - 23rd bits
   long mask = 0x00FFFFFF;
-
   unsigned long stat;
-  unsigned long channelData [channelNumber];
-
+  unsigned long channelData [totalChannels];
   //  Map channel 1 through n to 1 iteration
   //  e.g channel 1 is bytes in range 2 - 6
   byte currentChannel = 1;
   byte firstChannelByte = (currentChannel + 1) * 3 - 4;
   byte lastChannelByte = (currentChannel + 1) * 3;
-
-  SPI.transfer(RDATAC_CMD);
-  //  TODO: read data on DRDY falling edge
-  delay(4);
-
   for (int i = 0; i < bytesToRead; i += 1) {
     byte data = SPI.transfer(0x00);
     if (i < 3) {
@@ -201,18 +241,14 @@ void readDataContinuous(int channelNumber) {
       lastChannelByte = (currentChannel + 1) * 3;
     }
   }
-  delay(30);
   SPI.transfer(SDATAC_CMD);
 }
 
-void readData() {
-  SPI.transfer(RDATA_CMD);
-  delayMicroseconds(8);
-  for (int i = 0; i < 27; i++) {
-    byte data = SPI.transfer(0x00);
-    Serial.println(data);
-  }
-  delay(10);
+//  Rough timing to allow 250 sample per second
+void transferData() {
+  readData();
+  delay(4);
+  processIncomingData();
 }
 
 float convertChannelData(long data) {
