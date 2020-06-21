@@ -18,15 +18,15 @@
 #define WREG_CMD    0x40
 
 //  PIN
-const int RESET_PIN = 3;
-const int START_PIN = 4;
-const int CS_PIN = 5;
-const int DRDY_PIN = 6;
-const int CLKSEL_PIN = 7;
+const byte RESET_PIN = 3;
+const byte START_PIN = 4;
+const byte CS_PIN = 5;
+const byte DRDY_PIN = 6;
+const byte CLKSEL_PIN = 7;
 
 //  Device Characteristics
 //  Variables are set by getDeviceCharacteristics function
-int totalChannels = 0;
+byte totalChannels = 0;
 byte configOne = 0;
 byte configTwo = 0;
 byte configThree = 0;
@@ -73,14 +73,13 @@ void setup() {
 
   //  START
   digitalWrite(START_PIN, HIGH);
-  delayMicroseconds(8);
+  delay(10);
+
+  testChannelAmplitude();
 }
 
 void loop() {
-}
-
-void onRising() {
-  Serial.println("rising......");
+  //  transferData();
 }
 
 void handleSerialRead() {
@@ -158,13 +157,6 @@ void getDeviceCharacteristics() {
   configThree = readRegister(0x03);
 }
 
-bool testChannelAmplitude() {
-  //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
-  //  The output will have around 20uV offsets ------ data sheet pg.14 figure14
-  //  This offset is usually remedied by supplying voltage to drive the skin to common ground
-  byte tolerance = 80;
-}
-
 //  This returns device ID, something like 00111110
 //  The last two bits indicate how many channels is availble
 //  00 -> 4 channels, 01 -> 6 channels, 10 -> 8 channels
@@ -199,7 +191,7 @@ void readData() {
   SPI.transfer(RDATA_CMD);
 }
 
-// Reserved for future use when external interrupt can tick on 2us pulse
+// Reserved for future use when interrupt can tick on 2us pulse
 void readDataContinuous() {
   SPI.transfer(RDATAC_CMD);
 }
@@ -208,14 +200,12 @@ void stopDataContinuous() {
   SPI.transfer(SDATAC_CMD);
 }
 
-void processIncomingData() {
+void processIncomingData(long &stat, long channelData[]) {
   //  3 bytes per channel + 3 bytes status data at the beginning
   //  data sheet ------ pg.39
   int bytesToRead = 3 + (3 * totalChannels);
   //  Bit mask: long is 32 bits variable, only select 0 - 23rd bits
   long mask = 0x00FFFFFF;
-  unsigned long stat;
-  unsigned long channelData [totalChannels];
   //  Map channel 1 through n to 1 iteration
   //  e.g channel 1 is bytes in range 2 - 6
   byte currentChannel = 1;
@@ -231,8 +221,8 @@ void processIncomingData() {
       stat = stat & mask;
     }
     if (i > firstChannelByte && i < lastChannelByte) {
-      channelData[currentChannel - 1] = channelData[currentChannel - 1] << 8;
-      channelData[currentChannel - 1] = channelData[currentChannel - 1] | data;
+      channelData[currentChannel - 1L] = channelData[currentChannel - 1L] << 8;
+      channelData[currentChannel - 1L] = channelData[currentChannel - 1L] | data;
     }
     if (i == (lastChannelByte - 1)) {
       channelData[currentChannel - 1] = channelData[currentChannel - 1] & mask;
@@ -241,14 +231,41 @@ void processIncomingData() {
       lastChannelByte = (currentChannel + 1) * 3;
     }
   }
-  SPI.transfer(SDATAC_CMD);
 }
 
 //  Rough timing to allow 250 sample per second
 void transferData() {
+  long stat = 0;
+  long channelData [totalChannels];
   readData();
+  //  1000 ms / 250 sps = 4 ms per sample
   delay(4);
-  processIncomingData();
+  processIncomingData(stat, channelData);
+  Serial.write(stat);
+}
+
+
+bool testChannelAmplitude() {
+  //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
+  //  The output will have around 20uV offsets ------ data sheet pg.14 figure14
+  //  This offset is usually remedied by supplying voltage to drive the skin to common ground
+  bool testPassed = true;
+  float tolerance = 0.000080;
+  float target = -0.001875;
+  long stat = 0;
+  long channelData [totalChannels];
+  for (byte i = 0; i < 5; i += 1) {
+    readData();
+    delay(4);
+    processIncomingData(stat, channelData);
+    for (byte x = 0; x < totalChannels; x += 1) {
+      float channelValue = convertChannelData(channelData[x]);
+      if (channelValue > (target + tolerance) || channelValue < (target - tolerance)) {
+        testPassed = false;
+      }
+    }
+  }
+  return testPassed;
 }
 
 float convertChannelData(long data) {
