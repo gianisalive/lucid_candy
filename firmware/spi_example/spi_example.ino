@@ -17,6 +17,11 @@
 #define PREG_CMD    0x20
 #define WREG_CMD    0x40
 
+//  Used to indicate segments of data on client side eg. Observer/lib/serial.read.js
+#define STREAM_START  0xC0
+#define SPACER        0xFF
+#define STREAM_END    0xC1
+
 //  PIN
 const byte RESET_PIN = 3;
 const byte START_PIN = 4;
@@ -30,7 +35,9 @@ byte totalChannels = 0;
 byte configOne = 0;
 byte configTwo = 0;
 byte configThree = 0;
-bool testPassed = false;
+byte biasSenseP = 0;
+byte biasSenseN = 0;
+bool testPassed = true;
 
 void setup() {
   Serial.begin(9600);
@@ -55,39 +62,31 @@ void setup() {
   //  Pull CLKSEL_PIN low if external clock signal is provided
   pinMode(CLKSEL_PIN, OUTPUT);
   digitalWrite(CLKSEL_PIN, LOW);
-
+  
   //  data sheet ------ pg.62
-  // Configured to generate internal test signals
+  //  Configured to generate internal test signals
   startPowerUpSequence();
+  //  enable bias drive
+  enableBiasSense();
   //  Make sure all the registers are written
   getDeviceCharacteristics();
-
-  writeToRegister(0b11010011, 0x02);
-  delayMicroseconds(8);
-
-  writeToRegister(0b11111111, 0x0D);
-  delayMicroseconds(8);
-
-  writeToRegister(0b11111111, 0x0E);
-  delayMicroseconds(8);
-
   //  START
   digitalWrite(START_PIN, HIGH);
   delay(10);
-
   testChannelAmplitude();
 }
 
 void loop() {
-  //  transferData();
+  handleSerialRead();
 }
 
 void handleSerialRead() {
   byte incomingByte = 0;
   if (Serial.available() > 0) {
     incomingByte = Serial.read();
-    byte temp = 0x0C;
-    Serial.write(temp);
+    if (incomingByte == 0xC0) {
+      transferDeviceData();
+    }
   }
 }
 
@@ -112,7 +111,7 @@ void startPowerUpSequence() {
   delay(10);
   //  CONFIG2 ------ data sheet pg.47
   //  configured to generate internal test signal at DC (direct current)
-  writeToRegister(0xC0, 0x02);
+  writeToRegister(0xD3, 0x02);
   delay(10);
   //  CONFIG3 ------ data sheet pg.48
   //  PDB_REFBUF = 1 -> use internal reference
@@ -140,6 +139,13 @@ void startPowerUpSequence() {
   delayMicroseconds(8);
 }
 
+void enableBiasSense() {
+  writeToRegister(0b11111111, 0x0D);
+  delayMicroseconds(8);
+  writeToRegister(0b11111111, 0x0E);
+  delayMicroseconds(8);
+}
+
 void getDeviceCharacteristics() {
   //  First two bits determine number of available channels ------ data sheet pg.45
   const byte numberOfChannels = getDeviceID() & 0x03;
@@ -155,6 +161,24 @@ void getDeviceCharacteristics() {
   configOne = readRegister(0x01);
   configTwo = readRegister(0x02);
   configThree = readRegister(0x03);
+  biasSenseP = readRegister(0x0D);
+  biasSenseN = readRegister(0x0E);
+}
+
+void transferDeviceData() {
+  Serial.write(STREAM_START);
+  Serial.write(SPACER);
+  Serial.write(SPACER);
+  Serial.write(STREAM_START);
+  Serial.write(totalChannels);
+  Serial.write(configOne);
+  Serial.write(configTwo);
+  Serial.write(configThree);
+  Serial.write(testPassed);
+  Serial.write(STREAM_END);
+  Serial.write(SPACER);
+  Serial.write(SPACER);
+  Serial.write(STREAM_END);
 }
 
 //  This returns device ID, something like 00111110
@@ -245,11 +269,10 @@ void transferData() {
 }
 
 
-bool testChannelAmplitude() {
+void testChannelAmplitude() {
   //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
   //  The output will have around 20uV offsets ------ data sheet pg.14 figure14
   //  This offset is usually remedied by supplying voltage to drive the skin to common ground
-  bool testPassed = true;
   float tolerance = 0.000080;
   float target = -0.001875;
   long stat = 0;
@@ -265,7 +288,6 @@ bool testChannelAmplitude() {
       }
     }
   }
-  return testPassed;
 }
 
 float convertChannelData(long data) {
