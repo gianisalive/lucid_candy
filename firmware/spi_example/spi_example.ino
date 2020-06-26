@@ -39,6 +39,9 @@ byte biasSenseP = 0;
 byte biasSenseN = 0;
 bool testPassed = true;
 
+//  For Data Streaming: true = send data, false = stop sending data
+bool streamRequested = false;
+
 void setup() {
   Serial.begin(9600);
 
@@ -70,14 +73,25 @@ void setup() {
   enableBiasSense();
   //  Make sure all the registers are written
   getDeviceCharacteristics();
-  //  START
+
   digitalWrite(START_PIN, HIGH);
   delay(10);
   testChannelAmplitude();
+
+  digitalWrite(START_PIN, LOW);
+  delay(10);
+//  enableDifferentialInput();
+  enableSingleEndedInput();
+
+  digitalWrite(START_PIN, HIGH);
+  delay(10);
 }
 
 void loop() {
   handleSerialRead();
+  if (streamRequested == true) {
+    transferData();
+  }
 }
 
 void handleSerialRead() {
@@ -86,6 +100,12 @@ void handleSerialRead() {
     incomingByte = Serial.read();
     if (incomingByte == 0xC0) {
       transferDeviceData();
+    }
+    if (incomingByte = 0xC1) {
+      streamRequested = true;
+    }
+    if (incomingByte == 0xC2) {
+      streamRequested = false;
     }
   }
 }
@@ -136,6 +156,46 @@ void startPowerUpSequence() {
   writeToRegister(0b01100101, 0x0B);
   delayMicroseconds(8);
   writeToRegister(0b01100101, 0x0C);
+  delayMicroseconds(8);
+}
+
+void enableDifferentialInput() {
+  writeToRegister(0b01100000, 0x05);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x06);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x07);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x08);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x09);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x0A);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x0B);
+  delayMicroseconds(8);
+  writeToRegister(0b01100000, 0x0C);
+  delayMicroseconds(8);
+}
+
+void enableSingleEndedInput() {
+  writeToRegister(0b00100110, 0x15);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x05);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x06);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x07);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x08);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x09);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x0A);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x0B);
+  delayMicroseconds(8);
+  writeToRegister(0b01100111, 0x0C);
   delayMicroseconds(8);
 }
 
@@ -266,6 +326,9 @@ void transferData() {
   delay(4);
   processIncomingData(stat, channelData);
   Serial.write(stat);
+  for (byte i = 0; i < totalChannels; i += 1) {
+    Serial.write(convertChannelData(totalChannels[i]));
+  }
 }
 
 
