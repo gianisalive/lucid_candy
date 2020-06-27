@@ -17,11 +17,6 @@
 #define PREG_CMD    0x20
 #define WREG_CMD    0x40
 
-//  Used to indicate segments of data on client side eg. Observer/lib/serial.read.js
-#define STREAM_START  0xC0
-#define SPACER        0xFF
-#define STREAM_END    0xC1
-
 //  PIN
 const byte RESET_PIN = 3;
 const byte START_PIN = 4;
@@ -81,7 +76,7 @@ void setup() {
   digitalWrite(START_PIN, LOW);
   delay(10);
 //  enableDifferentialInput();
-  enableSingleEndedInput();
+//  enableSingleEndedInput();
 
   digitalWrite(START_PIN, HIGH);
   delay(10);
@@ -92,19 +87,20 @@ void loop() {
   if (streamRequested == true) {
     transferData();
   }
+  delay(500);
 }
 
 void handleSerialRead() {
-  byte incomingByte = 0;
+  byte incomingByte = 0xFF;
   if (Serial.available() > 0) {
     incomingByte = Serial.read();
-    if (incomingByte == 0xC0) {
+    if (incomingByte == 0x00) {
       transferDeviceData();
     }
-    if (incomingByte = 0xC1) {
+    if (incomingByte == 0x01) {
       streamRequested = true;
     }
-    if (incomingByte == 0xC2) {
+    if (incomingByte == 0x02) {
       streamRequested = false;
     }
   }
@@ -226,19 +222,13 @@ void getDeviceCharacteristics() {
 }
 
 void transferDeviceData() {
-  Serial.write(STREAM_START);
-  Serial.write(SPACER);
-  Serial.write(SPACER);
-  Serial.write(STREAM_START);
+  byte header = 6 & (0xFE);
+  Serial.write(header);
   Serial.write(totalChannels);
   Serial.write(configOne);
   Serial.write(configTwo);
   Serial.write(configThree);
   Serial.write(testPassed);
-  Serial.write(STREAM_END);
-  Serial.write(SPACER);
-  Serial.write(SPACER);
-  Serial.write(STREAM_END);
 }
 
 //  This returns device ID, something like 00111110
@@ -327,7 +317,7 @@ void transferData() {
   processIncomingData(stat, channelData);
   Serial.write(stat);
   for (byte i = 0; i < totalChannels; i += 1) {
-    Serial.write(convertChannelData(totalChannels[i]));
+    Serial.write(channelData[i]);
   }
 }
 
