@@ -222,7 +222,7 @@ void getDeviceCharacteristics() {
 }
 
 void transferDeviceData() {
-  byte header = 6 & (0xFE);
+  byte header = 6;
   Serial.write(header);
   Serial.write(totalChannels);
   Serial.write(configOne);
@@ -274,7 +274,8 @@ void stopDataContinuous() {
   SPI.transfer(SDATAC_CMD);
 }
 
-void processIncomingData(long &stat, long channelData[]) {
+// Aggregates every 3 bytes to according channel and display ADC converted value
+void readIncomingData(long &stat, long channelData[]) {
   //  3 bytes per channel + 3 bytes status data at the beginning
   //  data sheet ------ pg.39
   int bytesToRead = 3 + (3 * totalChannels);
@@ -307,20 +308,30 @@ void processIncomingData(long &stat, long channelData[]) {
   }
 }
 
-//  Rough timing to allow 250 sample per second
-void transferData() {
-  long stat = 0;
-  long channelData [totalChannels];
-  readData();
-  //  1000 ms / 250 sps = 4 ms per sample
-  delay(4);
-  processIncomingData(stat, channelData);
-  Serial.write(stat);
-  for (byte i = 0; i < totalChannels; i += 1) {
-    Serial.write(channelData[i]);
+void processIncomingData(byte channelData[]) {
+  byte bytesToRead = totalChannels * 3 + 3;
+  for (int i = 0; i < bytesToRead; i += 1) {
+    channelData[i] = SPI.transfer(0x00);
   }
 }
 
+//  Rough timing to allow 250 sample per second
+void transferData() {
+  //  3 bytes per channel + 3 bytes status data at the beginning + 1 byte header
+  //  data sheet ------ pg.39
+  byte bytesToRead = totalChannels * 3 + 3;
+  byte channelData [bytesToRead];
+  readData();
+  //  1000 ms / 250 sps = 4 ms per sample
+  delay(4);
+  processIncomingData(channelData);
+  //  Total data size: 3 bytes per channel + 3 bytes for device status + 1 byte for the header
+  byte header = bytesToRead + 1;
+  Serial.write(header);
+  for (byte i = 0; i < bytesToRead; i += 1) {
+    Serial.write(channelData[i]);
+  }
+}
 
 void testChannelAmplitude() {
   //  The output is set to -(VREFP - VREFN) / 2400  = 0.001875
@@ -333,7 +344,7 @@ void testChannelAmplitude() {
   for (byte i = 0; i < 5; i += 1) {
     readData();
     delay(4);
-    processIncomingData(stat, channelData);
+    readIncomingData(stat, channelData);
     for (byte x = 0; x < totalChannels; x += 1) {
       float channelValue = convertChannelData(channelData[x]);
       if (channelValue > (target + tolerance) || channelValue < (target - tolerance)) {
