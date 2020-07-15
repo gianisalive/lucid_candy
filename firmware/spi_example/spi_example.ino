@@ -75,19 +75,24 @@ void setup() {
 
   digitalWrite(START_PIN, LOW);
   delay(10);
+
+  //  Uncomment to enable differential input
 //  enableDifferentialInput();
-//  enableSingleEndedInput();
+
+  enableSingleEndedInput();         
 
   digitalWrite(START_PIN, HIGH);
   delay(10);
 }
 
 void loop() {
+//  Sending data to client
   handleSerialRead();
   if (streamRequested == true) {
     transferData();
   }
-  delay(500);
+//  See data in serial monitor
+//  readTransferData();
 }
 
 void handleSerialRead() {
@@ -177,21 +182,21 @@ void enableDifferentialInput() {
 void enableSingleEndedInput() {
   writeToRegister(0b00100110, 0x15);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x05);
+  writeToRegister(0b01100110, 0x05);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x06);
+  writeToRegister(0b01100110, 0x06);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x07);
+  writeToRegister(0b01100110, 0x07);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x08);
+  writeToRegister(0b01100110, 0x08);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x09);
+  writeToRegister(0b01100110, 0x09);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x0A);
+  writeToRegister(0b01100110, 0x0A);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x0B);
+  writeToRegister(0b01100110, 0x0B);
   delayMicroseconds(8);
-  writeToRegister(0b01100111, 0x0C);
+  writeToRegister(0b01100110, 0x0C);
   delayMicroseconds(8);
 }
 
@@ -274,7 +279,30 @@ void stopDataContinuous() {
   SPI.transfer(SDATAC_CMD);
 }
 
+// Display data that's being transfered in serial monitor
+// Mostly used for debuging and testing
+void readTransferData() {
+  //  3 bytes per channel + 3 bytes status data at the beginning + 1 byte header
+  //  data sheet ------ pg.39
+  long stat = 0x00FFFFFF;
+  long channelData [totalChannels];
+  readData();
+  //  1000 ms / 250 sps = 4 ms per sample
+  delay(4);
+  readIncomingData(stat, channelData);
+  Serial.print("STAT | ");
+  Serial.println(stat, HEX);
+  for (byte i = 0; i < totalChannels; i += 1) {
+    Serial.print("Channel ");
+    Serial.print(i + 1);
+    Serial.print(channelData[i], HEX);
+    Serial.print(" | ");
+    Serial.println(convertChannelData(channelData[i]), 7);
+  }
+}
+
 // Aggregates every 3 bytes to according channel and display ADC converted value
+// Mostly used for reading data in serial monitor & internal test
 void readIncomingData(long &stat, long channelData[]) {
   //  3 bytes per channel + 3 bytes status data at the beginning
   //  data sheet ------ pg.39
