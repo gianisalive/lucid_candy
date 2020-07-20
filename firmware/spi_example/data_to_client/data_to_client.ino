@@ -9,7 +9,6 @@
 #define STOP_CMD    0x0A
 
 //  Data Read Commands
-#define RDATAC_CMD  0x10
 #define SDATAC_CMD  0x11
 #define RDATA_CMD   0x12
 
@@ -79,20 +78,17 @@ void setup() {
   //  Uncomment to enable differential input
 //  enableDifferentialInput();
 
-  enableSingleEndedInput();         
+  enableSingleEndedInput();
 
   digitalWrite(START_PIN, HIGH);
   delay(10);
 }
 
 void loop() {
-//  Sending data to client
   handleSerialRead();
   if (streamRequested == true) {
     transferData();
   }
-//  See data in serial monitor
-//  readTransferData();
 }
 
 void handleSerialRead() {
@@ -268,37 +264,6 @@ byte readRegister(byte address) {
 
 void readData() {
   SPI.transfer(RDATA_CMD);
-}
-
-// Reserved for future use when interrupt can tick on 2us pulse
-void readDataContinuous() {
-  SPI.transfer(RDATAC_CMD);
-}
-
-void stopDataContinuous() {
-  SPI.transfer(SDATAC_CMD);
-}
-
-// Display data that's being transfered in serial monitor
-// Mostly used for debuging and testing
-void readTransferData() {
-  //  3 bytes per channel + 3 bytes status data at the beginning + 1 byte header
-  //  data sheet ------ pg.39
-  long stat = 0x00FFFFFF;
-  long channelData [totalChannels];
-  readData();
-  //  1000 ms / 250 sps = 4 ms per sample
-  delay(4);
-  readIncomingData(stat, channelData);
-  Serial.print("STAT | ");
-  Serial.println(stat, HEX);
-  for (byte i = 0; i < totalChannels; i += 1) {
-    Serial.print("Channel ");
-    Serial.print(i + 1);
-    Serial.print(channelData[i], HEX);
-    Serial.print(" | ");
-    Serial.println(convertChannelData(channelData[i]), 7);
-  }
 }
 
 // Aggregates every 3 bytes to according channel and display ADC converted value
