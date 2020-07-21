@@ -1,4 +1,5 @@
 # Lucid Candy
+![board pic](github_resource/board.jpg)
 A bare minimum 8 channel EEG board with TI ads1299 chip. It can be driven with any microcontroller that has 3.3V logic. Multiple boards can be chained together to record with 16 or 24 channels. This repository includes KiCad files and SPI example.
 
 ## Disclaimer
@@ -25,4 +26,4 @@ All the component used can be found [here][https://docs.google.com/spreadsheets/
 
 ## miscellaneous
 Some silly questions I asked:
- - [voltage offset][https://e2e.ti.com/support/data-converters/f/73/p/912858/3374371#3374371]
+ - [voltage offset](https://e2e.ti.com/support/data-converters/f/73/p/912858/3374371#3374371)
