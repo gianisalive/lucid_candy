@@ -28,13 +28,13 @@ All the component used can be found [here](https://docs.google.com/spreadsheets/
 - Data are transfered via SPI MODE1 with MSB first
 - Data are retrieve with no-op command 0x00
 - Chip has an internal clock. If BYOO (bring your own oscillator), then connect it to CLK pin, and tie CLKSEL low.
-- Power up sequence:
- - Set CLKSEL pin high to enable internal oscillator
- - Set RESET pin high, and make sure VCAP1 is settled around 1.1V
- - Send reset command, and at this point DRDY pin should toggle at around 250Hz
- - Send SDATAC (stop data continuous) command
- - Set CONFIG1(0x01), CONFIG2(0x02) and CONFIG3(0x03)
- - Set CHnSET (single ended, double ended or generate test signal)
+**Power up sequence:**
+- Set CLKSEL pin high to enable internal oscillator
+- Set RESET pin high, and make sure VCAP1 is settled around 1.1V
+- Send reset command, and at this point DRDY pin should toggle at around 250Hz
+- Send SDATAC (stop data continuous) command
+- Set CONFIG1(0x01), CONFIG2(0x02) and CONFIG3(0x03)
+- Set CHnSET (single ended, double ended or generate test signal)
 
 ## miscellaneous
 Some silly questions I asked:
