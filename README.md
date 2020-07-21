@@ -22,7 +22,7 @@ The philosophy with current version of the design is to work within TI's recomme
 ![power_schematics](schematic/power.jpg)
 
 ## Components
-All the component used can be found [here][https://docs.google.com/spreadsheets/d/1N4UGuHjUGolRgQoIL3MemhwEijfZmJlSR52b1LrSyF4/edit?usp=sharing]. Some of these are pretty over priced. In most situations, you can probably get away with cheaper parts.
+All the component used can be found [here](https://docs.google.com/spreadsheets/d/1N4UGuHjUGolRgQoIL3MemhwEijfZmJlSR52b1LrSyF4/edit?usp=sharing). Some of these are pretty over priced. In most situations, you can probably get away with cheaper parts.
 
 ## miscellaneous
 Some silly questions I asked:
