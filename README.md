@@ -24,6 +24,18 @@ The philosophy with current version of the design is to work within TI's recomme
 ## Components
 All the component used can be found [here](https://docs.google.com/spreadsheets/d/1N4UGuHjUGolRgQoIL3MemhwEijfZmJlSR52b1LrSyF4/edit?usp=sharing). Some of these are pretty over priced. In most situations, you can probably get away with cheaper parts.
 
+## Programming in a nutshell
+- Data are transfered via SPI MODE1 with MSB first
+- Data are retrieve with no-op command 0x00
+- Chip has an internal clock. If BYOO (bring your own oscillator), then connect it to CLK pin, and tie CLKSEL low.
+- Power up sequence:
+ - Set CLKSEL pin high to enable internal oscillator
+ - Set RESET pin high, and make sure VCAP1 is settled around 1.1V
+ - Send reset command, and at this point DRDY pin should toggle at around 250Hz
+ - Send SDATAC (stop data continuous) command
+ - Set CONFIG1(0x01), CONFIG2(0x02) and CONFIG3(0x03)
+ - Set CHnSET (single ended, double ended or generate test signal)
+
 ## miscellaneous
 Some silly questions I asked:
  - [voltage offset](https://e2e.ti.com/support/data-converters/f/73/p/912858/3374371#3374371)
