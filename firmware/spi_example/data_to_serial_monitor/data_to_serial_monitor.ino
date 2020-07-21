@@ -125,6 +125,7 @@ void startPowerUpSequence() {
 }
 
 void enableDifferentialInput() {
+  Serial.println("Enabling differential input...");
   writeToRegister(0b01100000, 0x05);
   delayMicroseconds(8);
   writeToRegister(0b01100000, 0x06);
@@ -144,6 +145,7 @@ void enableDifferentialInput() {
 }
 
 void enableSingleEndedInput() {
+  Serial.println("Enabling single ended input...");
   writeToRegister(0b00100110, 0x15);
   delayMicroseconds(8);
   writeToRegister(0b01100110, 0x05);
@@ -165,6 +167,7 @@ void enableSingleEndedInput() {
 }
 
 void enableBiasSense() {
+  Serial.println("Enabling bias sense...");
   writeToRegister(0b11111111, 0x0D);
   delayMicroseconds(8);
   writeToRegister(0b11111111, 0x0E);
