@@ -9,8 +9,8 @@ No one really should, but if you're a newbie in electronics, software, and neuro
 
 ## Files & Locations
 |-- lucid_candy
-|---- component_datasheet // important datasheet of the components used for the board \n
-|---- e_component         // all the KiCad pcb footprint (from SnapEDA) for the components. \n
-|---- eeg                 // KiCad design files \n
-|---- firmware            // example of Arduino DUE communicating with the board via SPI. \n
-|---- gerber_zip          // same file used to produce the current board with JLCPCB. \n
+|---- component_datasheet // important datasheet of the components used for the board  
+|---- e_component         // all the KiCad pcb footprint (from SnapEDA) for the components  
+|---- eeg                 // KiCad design files  
+|---- firmware            // example of Arduino DUE communicating with the board via SPI  
+|---- gerber_zip          // same file used to produce the current board with JLCPCB  
