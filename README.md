@@ -8,7 +8,7 @@ It still needs a lot of improvement, professional guidance and review. In no way
 No one really should, but if you're a newbie in electronics, software, and neuroscience, and want to learn more by building, then this might be a thing for you. If you're just looking for an affortable EEG, there're better open source ones out there, such as [OpenBCI](https://openbci.com/)
 
 ## Files & Locations
-|-- lucid_candy
+|--- lucid_candy
 |---- component_datasheet // important datasheet of the components used for the board  
 |---- e_component         // all the KiCad pcb footprint (from SnapEDA) for the components  
 |---- eeg                 // KiCad design files  
