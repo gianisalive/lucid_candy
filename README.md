@@ -10,11 +10,11 @@ No one really should, but if you're a newbie in electronics, software, and neuro
 
 ## Files & Locations
 |-- lucid_candy  
-|---- component_datasheet // important datasheet of the components used for the board  
-|---- e_component         // all the KiCad pcb footprint (from SnapEDA) for the components  
-|---- eeg                 // KiCad design files  
-|---- firmware            // example of Arduino DUE communicating with the board via SPI  
-|---- gerber_zip          // same file used to produce the current board with JLCPCB  
+|---- component_datasheet------important datasheet of the components used for the board  
+|---- e_component--------------all the KiCad pcb footprint (from SnapEDA) for the components  
+|---- eeg----------------------KiCad design files  
+|---- firmware-----------------example of Arduino DUE communicating with the board via SPI  
+|---- gerber_zip---------------same file used to produce the current board with JLCPCB  
 
 ## Schematics
 The philosophy with current version of the design is to work within TI's recommendation, and choose components with least amount of tolerance/inductance to develope a baseline. In the future, any design improvement can be evaluated/compared to the current design.
