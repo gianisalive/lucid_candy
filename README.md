@@ -44,6 +44,9 @@ All the component used can be found [here](https://docs.google.com/spreadsheets/
 - Data are structured in 2's compliment. The MSB is used to determin whether the value is positive or negative
 - V = decimal value * (2 * 4.5 / 24) / (2 ^ 24)
 
-## miscellaneous
+## Testing
+Fully assembled device with current Arduino firmware is tested with a Calibrated Keysight DSOX1204G oscilloscope/function generator.
+
+## Miscellaneous
 Some silly questions I asked:
  - [voltage offset](https://e2e.ti.com/support/data-converters/f/73/p/912858/3374371#3374371)
