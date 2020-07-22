@@ -45,7 +45,7 @@ All the component used can be found [here](https://docs.google.com/spreadsheets/
 - V = decimal value * (2 * 4.5 / 24) / (2 ^ 24)
 
 ## Testing
-Fully assembled device with current Arduino firmware is tested with a Calibrated Keysight DSOX1204G oscilloscope/function generator.
+Fully assembled device with current Arduino firmware is tested with a calibrated Keysight DSOX1204G oscilloscope/function generator.
 
 ## Miscellaneous
 Some silly questions I asked:
