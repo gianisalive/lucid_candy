@@ -42,7 +42,7 @@ All the component used can be found [here](https://docs.google.com/spreadsheets/
 - After sending RDATA or RDATAC command, data is returned on the second rising edge of the DRDY pin
 - Initial 3 bytes are status data, and it always starts with 1100. Then it'll transfer 3 bytes of data per channel. An 8 channel board will have 8 * 3 + 3 = 27 bytes of data
 - Data are structured in 2's compliment. The MSB is used to determin whether the value is positive or negative
-- V = decimal value * (2 * 4.5 / 24) / (2 ^ 24)
+- V = LSB * (2 * 4.5 / 24) / (2 ^ 24) // LSB = decimal value of 3 bytes channel data
 
 ## Testing
 Fully assembled device with current Arduino firmware is tested with a calibrated Keysight DSOX1204G oscilloscope/function generator.
