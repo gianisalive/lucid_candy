@@ -51,13 +51,13 @@ void setup() {
   pinMode(CLKSEL_PIN, OUTPUT);
   digitalWrite(CLKSEL_PIN, LOW);
 
-  getDeviceID();
   //  data sheet ------ pg.62
   //  Configured to generate internal test signals
   startPowerUpSequence();
   //  enable bias drive
   enableBiasSense();
-  //  Make sure all the registers are written
+  //  get total channel number
+  getDeviceID();
 
   //  Uncomment to enable differential input (Both P and N electrode)
 //  enableDifferentialInput();
@@ -179,8 +179,16 @@ void enableBiasSense() {
 //  00 -> 4 channels, 01 -> 6 channels, 10 -> 8 channels
 void getDeviceID() {
   byte deviceID = readRegister(0x00);
-  Serial.print("Device ID: ");
-  Serial.println(deviceID);
+  const byte numberOfChannels = deviceID & 0x03;
+  if (numberOfChannels == 0x00) {
+    totalChannels = 4;
+  }
+  if (numberOfChannels == 0x01) {
+    totalChannels = 6;
+  }
+  if (numberOfChannels == 0x2) {
+    totalChannels = 8;
+  }
 }
 
 void writeToRegister(byte command, byte address) {
@@ -216,10 +224,14 @@ void dataToSerialMonitor() {
   //  data sheet ------ pg.39
   long stat = 0x00FFFFFF;
   long channelData [totalChannels];
+  Serial.print("TOTAL CHANNEL | ");
+  Serial.println(totalChannels);
   readData();
   //  1000 ms / 250 sps = 4 ms per sample
   delay(4);
   readIncomingData(stat, channelData);
+  Serial.print("TIME PASSED | ");
+  Serial.println(millis());
   Serial.print("STAT | ");
   Serial.println(stat, HEX);
   for (byte i = 0; i < totalChannels; i += 1) {
@@ -272,24 +284,6 @@ void processIncomingData(byte channelData[]) {
   byte bytesToRead = totalChannels * 3 + 3;
   for (int i = 0; i < bytesToRead; i += 1) {
     channelData[i] = SPI.transfer(0x00);
-  }
-}
-
-//  Rough timing to allow 250 sample per second
-void transferData() {
-  //  3 bytes per channel + 3 bytes status data at the beginning + 1 byte header
-  //  data sheet ------ pg.39
-  byte bytesToRead = totalChannels * 3 + 3;
-  byte channelData [bytesToRead];
-  readData();
-  //  1000 ms / 250 sps = 4 ms per sample
-  delay(4);
-  processIncomingData(channelData);
-  //  Total data size: 3 bytes per channel + 3 bytes for device status + 1 byte for the header
-  byte header = bytesToRead + 1;
-  Serial.write(header);
-  for (byte i = 0; i < bytesToRead; i += 1) {
-    Serial.write(channelData[i]);
   }
 }
 
