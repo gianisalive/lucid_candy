@@ -59,7 +59,7 @@ void setup() {
   //  Pull CLKSEL_PIN low if external clock signal is provided
   pinMode(CLKSEL_PIN, OUTPUT);
   digitalWrite(CLKSEL_PIN, LOW);
-  
+
   //  data sheet ------ pg.62
   //  Configured to generate internal test signals
   startPowerUpSequence();
@@ -124,7 +124,7 @@ void startPowerUpSequence() {
   //  CONFIG1
   //  CLK_EN = 1 -> enable internal clock output
   //  DR = 110 -> fMOD/4096
-  writeToRegister(0x96, 0x01);
+  writeToRegister(0x94, 0x01);
   delay(10);
   //  CONFIG2 ------ data sheet pg.47
   //  configured to generate internal test signal at DC (direct current)
