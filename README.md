@@ -47,6 +47,10 @@ All the component used can be found [here](https://docs.google.com/spreadsheets/
 ## Testing
 Fully assembled device with current Arduino firmware is tested with a calibrated Keysight DSOX1204G oscilloscope/function generator.
 
+## Chanllenges
+In a nutshell, eliminating noises and extracting the signal is one of the most chanllenging part when it comes to designing the hardware and the software.  
+Neurons communcate via electrical signals (Action Potentials). When neurons are ready to send signals to neighboring neurons, they produce about 100 mV spike in less than 3 ms. These signals are further attenuated (reduction in signal strength) by the surrounding anatomical structures. When the electrode receives the signal, it's been attenuated to uV scale. In order to extract the signals, we need to filter out the noise with minimal distortion to the signal. There're few methods suggest that're yet to be implemented, such as bandpass filter, CleanLine and infinite impulse response.
+
 ## Miscellaneous
 Some silly questions I asked:
  - [voltage offset](https://e2e.ti.com/support/data-converters/f/73/p/912858/3374371#3374371)
