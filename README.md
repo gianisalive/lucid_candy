@@ -6,7 +6,7 @@ A bare minimum 8 channel EEG board with TI ads1299 chip. It can be driven with a
 It still needs a lot of improvement, professional guidance and review. In no way it's fully tested to perform under clinical setting. Please use basic principles to test and evaluate before using it. All suggestions are highly appreciated: gian@bettermetoo.com
 
 ## Who should use it?
-No one really should, but if you're a newbie in electronics, software, and neuroscience, and want to learn more by building, then this might be a thing for you. If you're just looking for an affortable EEG, there're better open source ones out there, such as [OpenBCI](https://openbci.com/).
+No one really should, but if you're a newbie in electronics, software, and neuroscience, and want to learn more by building, then this might be a thing for you. If you're just looking for an affordable EEG, there're better open source ones out there, such as [OpenBCI](https://openbci.com/).
 
 ## Files & Locations
 |-- lucid_candy  
